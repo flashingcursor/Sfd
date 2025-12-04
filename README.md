@@ -2,49 +2,77 @@
 
 A quiet manifesto.
 
-## Running on iPhone
+## Deploy to GitHub Pages
 
-### Option 1: Local Server (Recommended for Testing)
+### Step 1: Create Repository
 
-1. Unzip this folder on your Mac
-2. Open Terminal and navigate to the folder:
-   ```
-   cd ~/Downloads/steadfast-pwa
-   ```
-3. Run the server:
-   ```
-   python3 serve.py
-   ```
-4. On your iPhone (same WiFi network), open Safari and go to the Network URL shown in Terminal
-5. Tap **Share → Add to Home Screen** to install as an app
+1. Go to [github.com/new](https://github.com/new)
+2. Name it `steadfastdigital.io` (or any name you like)
+3. Keep it **Public** (required for free GitHub Pages)
+4. Click **Create repository**
 
-### Option 2: Host Online (For Permanent Use)
+### Step 2: Upload Files
 
-Upload the contents to any static host:
+**Option A: Upload via GitHub.com**
 
-- **GitHub Pages**: Free, push to a repo and enable Pages
-- **Netlify**: Drag and drop the folder at netlify.com/drop
-- **Vercel**: Similar drag-and-drop deploy
-- **Your own server**: Just serve the files
+1. In your new empty repo, click **"uploading an existing file"**
+2. Drag all 5 files from this folder:
+   - `index.html`
+   - `manifest.json`
+   - `sw.js`
+   - `icon-192.png`
+   - `icon-512.png`
+3. Click **Commit changes**
 
-Then visit the URL on your iPhone and add to Home Screen.
+**Option B: Use Git**
 
-## What's Included
+```bash
+cd steadfast-github
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin git@github.com:YOUR_USERNAME/YOUR_REPO.git
+git push -u origin main
+```
 
-- `index.html` — The page itself
-- `manifest.json` — PWA configuration
-- `sw.js` — Service worker for offline support
-- `icon-192.png` / `icon-512.png` — App icons
-- `serve.py` — Simple local server
+### Step 3: Enable GitHub Pages
 
-## Features
+1. Go to your repo's **Settings** tab
+2. Click **Pages** in the left sidebar
+3. Under "Source", select **Deploy from a branch**
+4. Select **main** branch and **/ (root)** folder
+5. Click **Save**
 
-- Works offline once loaded
-- Respects light/dark mode
-- Gyroscope-responsive paper texture on mobile
-- Subtle haptic feedback on section reveals
-- Time-of-day aware color temperature
-- Proper safe area handling for notched devices
+### Step 4: Wait & Visit
+
+- GitHub will build your site (1-2 minutes)
+- Your site will be live at: `https://YOUR_USERNAME.github.io/YOUR_REPO/`
+- If you named the repo `YOUR_USERNAME.github.io`, it'll be at: `https://YOUR_USERNAME.github.io/`
+
+### Step 5: Add to iPhone
+
+1. Open the URL in Safari on your iPhone
+2. Tap **Share → Add to Home Screen**
+3. Done—it works offline now
+
+---
+
+## Custom Domain (Optional)
+
+If you own `steadfastdigital.io`:
+
+1. In repo **Settings → Pages**, enter your custom domain
+2. Add these DNS records at your registrar:
+   - **A records** pointing to GitHub's IPs:
+     ```
+     185.199.108.153
+     185.199.109.153
+     185.199.110.153
+     185.199.111.153
+     ```
+   - **CNAME** for `www`: `YOUR_USERNAME.github.io`
+3. Check "Enforce HTTPS" once DNS propagates
 
 ---
 
