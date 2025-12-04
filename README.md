@@ -76,4 +76,22 @@ If you own `steadfastdigital.io`:
 
 ---
 
+## Features
+
+- Works offline once loaded
+- Respects light/dark mode
+- Gyroscope-responsive paper texture on mobile
+- Subtle haptic feedback on section reveals
+- Time-of-day aware color temperature
+- Proper safe area handling for notched devices
+
+### Experimental Effects
+
+- **Breathing** — The page has an imperceptible brightness oscillation on a 12-second cycle, as if the document is alive
+- **Ink pooling** — Text darkens letter by letter where your cursor rests, as if ink is pooling where attention gathers
+- **Ambient particles** — Occasionally, a single letter-shaped particle drifts off the page and dissolves into nothing
+- **Gravitational tilt** — Text subtly shifts toward your cursor position, as if attracted to attention
+
+---
+
 *"The people who need to find this will find it."*

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f8f6f1" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1c1a17" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#1b1b1d" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Steadfast">
@@ -37,6 +37,8 @@
       
       --glow-x: 50%;
       --glow-y: 50%;
+      --cursor-x: 0.5;
+      --cursor-y: 0.5;
       --scroll-progress: 0;
       --texture-offset-x: 0;
       --texture-offset-y: 0;
@@ -46,18 +48,18 @@
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg-h: 35;
-        --bg-s: 15%;
+        --bg-h: 220;
+        --bg-s: 8%;
         --bg-l: 11%;
         --bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
-        --text: #e8e4dc;
-        --text-muted: #9a9489;
-        --accent: #c4956a;
-        --rule: #3d3830;
-        --glow-opacity: 0.12;
-        --glow-color: 60, 50, 35;
-        --texture-opacity: 0.04;
-        --progress-color: rgba(196, 149, 106, 0.12);
+        --text: #e4e3e0;
+        --text-muted: #908f8a;
+        --accent: #b8a080;
+        --rule: #363538;
+        --glow-opacity: 0.1;
+        --glow-color: 50, 48, 45;
+        --texture-opacity: 0.035;
+        --progress-color: rgba(184, 160, 128, 0.1);
       }
     }
 
@@ -71,7 +73,7 @@
     }
 
     html {
-      font-size: 18px;
+      font-size: 23px;
       scroll-behavior: smooth;
       -webkit-hyphens: auto;
       hyphens: auto;
@@ -110,14 +112,87 @@
       /* Smooth scrolling with proper iOS momentum */
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: none;
+      /* Breathing - very subtle brightness oscillation */
+      animation: breathe 12s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { filter: brightness(1) saturate(1); }
+      25% { filter: brightness(1.006) saturate(1.01); }
+      50% { filter: brightness(1.01) saturate(1.005); }
+      75% { filter: brightness(1.004) saturate(1.008); }
+    }
+
+    /* Ink pooling effect on individual letters */
+    .ink-letter {
+      display: inline;
+      transition: text-shadow 0.6s ease, filter 0.6s ease;
+    }
+
+    .ink-letter.ink-pooled {
+      text-shadow: 0 0 2.5px currentColor, 0 0 1px currentColor;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .ink-letter.ink-pooled {
+        text-shadow: 0 0 5px currentColor, 0 0 2px currentColor;
+      }
+    }
+
+    /* Ambient particles */
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      font-family: 'EB Garamond', Georgia, serif;
+      color: var(--text-muted);
+      opacity: 0;
+      z-index: 1001;
+      user-select: none;
+      will-change: transform, opacity;
+    }
+
+    @keyframes particleDrift {
+      0% {
+        opacity: 0;
+        transform: translate(0, 0) rotate(0deg);
+      }
+      8% {
+        opacity: 0.4;
+      }
+      85% {
+        opacity: 0.2;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--drift-x), var(--drift-y)) rotate(var(--drift-rot));
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      @keyframes particleDrift {
+        0% {
+          opacity: 0;
+          transform: translate(0, 0) rotate(0deg);
+        }
+        8% {
+          opacity: 0.35;
+        }
+        85% {
+          opacity: 0.15;
+        }
+        100% {
+          opacity: 0;
+          transform: translate(var(--drift-x), var(--drift-y)) rotate(var(--drift-rot));
+        }
+      }
     }
 
     @media (prefers-color-scheme: dark) {
       body {
         background-color: hsl(
-          calc(var(--bg-h) - (var(--scroll-progress) * 2) - var(--time-warmth)),
+          calc(var(--bg-h) + (var(--scroll-progress) * 5)),
           var(--bg-s),
-          calc(var(--bg-l) + (var(--scroll-progress) * 1%))
+          calc(var(--bg-l) + (var(--scroll-progress) * 1.5%))
         );
       }
     }
@@ -202,7 +277,6 @@
     @media (min-width: 1100px) {
       .container {
         max-width: 640px;
-        margin-left: calc(50% - 200px);
       }
     }
 
@@ -255,6 +329,15 @@
     .section.visible {
       opacity: 1;
       transform: translateY(0);
+    }
+
+    /* Gravitational tilt - text attracted to cursor */
+    .gravitational {
+      transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: translate(
+        calc((var(--cursor-x) - 0.5) * 3px),
+        calc((var(--cursor-y) - 0.5) * 2px)
+      );
     }
 
     .section-number {
@@ -358,42 +441,6 @@
       font-style: italic;
       margin-top: 2rem;
       line-height: 1.6;
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-
-    @media (min-width: 1100px) {
-      .marginalia {
-        position: absolute;
-        right: -220px;
-        width: 180px;
-        margin-top: 0;
-        text-align: left;
-        font-size: 0.78rem;
-        opacity: 0;
-        transform: translateX(10px);
-        transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
-      }
-
-      .marginalia::before {
-        content: "";
-        position: absolute;
-        left: -20px;
-        top: 0.5em;
-        width: 12px;
-        height: 1px;
-        background: var(--rule);
-        opacity: 0;
-        transition: opacity 0.4s ease 0.5s;
-      }
-
-      .section.visible .marginalia {
-        opacity: 0.9;
-        transform: translateX(0);
-      }
-
-      .section.visible .marginalia::before {
-        opacity: 1;
-      }
     }
 
     em {
@@ -519,7 +566,7 @@
     /* Responsive */
     @media (max-width: 600px) {
       html {
-        font-size: 16px;
+        font-size: 20px;
       }
 
       .container {
@@ -575,9 +622,17 @@
         transition-duration: 0.01ms !important;
       }
       
-      .section, .closing, hr, .marginalia {
+      body {
+        animation: none !important;
+      }
+      
+      .section, .closing, hr {
         opacity: 1;
         transform: none;
+      }
+      
+      .gravitational {
+        transform: none !important;
       }
 
       hr {
@@ -613,21 +668,6 @@
       .section, .marginalia {
         opacity: 1 !important;
         transform: none !important;
-        position: static !important;
-      }
-
-      .marginalia {
-        width: auto !important;
-        font-size: 9pt;
-        border-left: 2px solid #ccc;
-        padding-left: 1em;
-        margin-top: 1em;
-        margin-left: 2em;
-        right: auto !important;
-      }
-
-      .marginalia::before {
-        display: none !important;
       }
 
       hr {
@@ -714,7 +754,7 @@
         where nothing can be added or removed. Good enough as sufficiency—the 
         point where something actually serves its purpose, not just the deadline.
       </p>
-      <p class="marginalia" data-anchor="previous">
+      <p class="marginalia">
         The people who say "good enough" most often are usually the ones 
         who won't have to live with the consequences.
       </p>
@@ -758,7 +798,7 @@
         waiting for a stable moment that isn't coming. The people who need 
         to find this will find it.
       </p>
-      <p class="marginalia" data-anchor="previous">
+      <p class="marginalia">
         When there's more to say, we'll say it here.
       </p>
     </section>
@@ -777,40 +817,7 @@
     const hasHaptics = 'vibrate' in navigator;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Position marginalia
-    function positionMarginalia() {
-      if (window.innerWidth < 1100) return;
-      
-      document.querySelectorAll('.marginalia[data-anchor="previous"]').forEach(note => {
-        const anchor = note.previousElementSibling;
-        if (!anchor) return;
-        
-        const section = note.closest('.section');
-        const sectionRect = section.getBoundingClientRect();
-        const anchorRect = anchor.getBoundingClientRect();
-        
-        const topOffset = anchorRect.top - sectionRect.top;
-        note.style.top = `${topOffset}px`;
-      });
-    }
-
-    positionMarginalia();
-    
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        if (window.innerWidth < 1100) {
-          document.querySelectorAll('.marginalia').forEach(note => {
-            note.style.top = '';
-          });
-        } else {
-          positionMarginalia();
-        }
-      }, 100);
-    });
-
-    document.fonts.ready.then(positionMarginalia);
+    document.fonts.ready.then(() => {});
 
     // Time-aware warmth
     function calculateTimeWarmth() {
@@ -888,8 +895,31 @@
           const y = (e.clientY / window.innerHeight) * 100;
           document.body.style.setProperty('--glow-x', `${x}%`);
           document.body.style.setProperty('--glow-y', `${y}%`);
+          
+          // Normalized cursor position for gravitational tilt
+          const normX = e.clientX / window.innerWidth;
+          const normY = e.clientY / window.innerHeight;
+          document.documentElement.style.setProperty('--cursor-x', normX);
+          document.documentElement.style.setProperty('--cursor-y', normY);
         });
       });
+    }
+
+    // === GRAVITATIONAL TILT ===
+    // Text subtly shifts toward cursor position
+    if (!isTouch && !prefersReducedMotion) {
+      // Apply gravitational class to sections once visible
+      const applyGravitational = () => {
+        document.querySelectorAll('.section.visible, .opening, .closing.visible').forEach(el => {
+          if (!el.classList.contains('gravitational')) {
+            el.classList.add('gravitational');
+          }
+        });
+      };
+      
+      // Check periodically as sections become visible
+      setInterval(applyGravitational, 500);
+      applyGravitational();
     }
 
     // Scroll-linked effects with velocity tracking
@@ -973,7 +1003,6 @@
                 revealedSections.add(sectionNum);
                 triggerHaptic('light');
               }
-              setTimeout(positionMarginalia, 50);
             }
             
             // Haptic on HR crossing
@@ -1001,7 +1030,7 @@
       
       const getBaseTextColor = () => {
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        return isDark ? { h: 35, s: 12, l: 88 } : { h: 25, s: 8, l: 12 };
+        return isDark ? { h: 40, s: 4, l: 88 } : { h: 25, s: 8, l: 12 };
       };
       
       document.addEventListener('mousemove', (e) => {
@@ -1035,11 +1064,177 @@
 
     updateScrollEffects();
 
-    // Register service worker for offline support
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => console.log('SW registered'))
-        .catch((err) => console.log('SW registration failed:', err));
+    // === INK POOLING ===
+    // Text darkens letter by letter where cursor rests, as if ink is pooling
+    if (!isTouch && !prefersReducedMotion) {
+      let inkInterval = null;
+      let lastInkTarget = null;
+      let currentLetterSpans = [];
+      let pooledLetterIndices = new Set();
+
+      const wrapLetters = (element) => {
+        // Skip if already wrapped
+        if (element.dataset.inkWrapped) return;
+        
+        const text = element.innerHTML;
+        // Only wrap if it's plain text (no nested HTML)
+        if (element.children.length > 0) return;
+        
+        let wrapped = '';
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          if (char === ' ') {
+            wrapped += ' ';
+          } else {
+            wrapped += `<span class="ink-letter" data-index="${i}">${char}</span>`;
+          }
+        }
+        element.innerHTML = wrapped;
+        element.dataset.inkWrapped = 'true';
+        return element.querySelectorAll('.ink-letter');
+      };
+
+      const unwrapLetters = (element) => {
+        if (!element.dataset.inkWrapped) return;
+        element.innerHTML = element.textContent;
+        delete element.dataset.inkWrapped;
+      };
+
+      const startPooling = (element) => {
+        const letters = wrapLetters(element);
+        if (!letters) return;
+        
+        currentLetterSpans = Array.from(letters);
+        pooledLetterIndices.clear();
+        
+        // Pool letters randomly over time
+        inkInterval = setInterval(() => {
+          // Find unpooled letters
+          const unpooled = currentLetterSpans
+            .map((span, i) => ({ span, i }))
+            .filter(({ i }) => !pooledLetterIndices.has(i));
+          
+          if (unpooled.length === 0) {
+            clearInterval(inkInterval);
+            return;
+          }
+          
+          // Pool 1-3 random letters at a time
+          const count = Math.min(unpooled.length, 1 + Math.floor(Math.random() * 2));
+          for (let j = 0; j < count; j++) {
+            const randomIdx = Math.floor(Math.random() * unpooled.length);
+            const { span, i } = unpooled.splice(randomIdx, 1)[0];
+            span.classList.add('ink-pooled');
+            pooledLetterIndices.add(i);
+          }
+        }, 80); // Pool new letters every 80ms
+      };
+
+      const stopPooling = () => {
+        clearInterval(inkInterval);
+        inkInterval = null;
+      };
+
+      // Fade out pooled letters gradually
+      setInterval(() => {
+        document.querySelectorAll('.ink-letter.ink-pooled').forEach(letter => {
+          // Only fade if not in currently hovered element
+          if (!lastInkTarget || !lastInkTarget.contains(letter)) {
+            letter.classList.remove('ink-pooled');
+          }
+        });
+      }, 5000);
+
+      let hoverTimeout = null;
+      
+      document.addEventListener('mousemove', (e) => {
+        const target = e.target.closest('p, li, h1, h2, blockquote');
+        
+        if (target !== lastInkTarget) {
+          clearTimeout(hoverTimeout);
+          stopPooling();
+          
+          lastInkTarget = target;
+          
+          if (target && !target.classList.contains('marginalia')) {
+            // Start pooling after brief pause
+            hoverTimeout = setTimeout(() => {
+              startPooling(target);
+            }, 400);
+          }
+        }
+      });
+    }
+
+    // === AMBIENT PARTICLES ===
+    // Occasional letter-shaped particles drift off the page
+    if (!prefersReducedMotion) {
+      const particleChars = ['a', 'e', 'i', 'o', 's', 't', 'n', 'r', '.', ',', '—'];
+      
+      const createParticle = () => {
+        const particle = document.createElement('span');
+        particle.className = 'particle';
+        particle.textContent = particleChars[Math.floor(Math.random() * particleChars.length)];
+        
+        // Random position along the text area
+        const container = document.querySelector('.container');
+        const rect = container.getBoundingClientRect();
+        const scrollY = window.pageYOffset;
+        
+        // Start somewhere in the visible text area
+        const startX = rect.left + (Math.random() * rect.width * 0.8) + (rect.width * 0.1);
+        const startY = scrollY + (Math.random() * window.innerHeight * 0.6) + (window.innerHeight * 0.2);
+        
+        particle.style.left = `${startX}px`;
+        particle.style.top = `${startY}px`;
+        particle.style.fontSize = `${0.9 + Math.random() * 0.5}rem`;
+        
+        // Random drift direction - more movement
+        const driftX = (Math.random() - 0.5) * 150;
+        const driftY = -50 - Math.random() * 80;
+        const driftRot = (Math.random() - 0.5) * 60;
+        
+        particle.style.setProperty('--drift-x', `${driftX}px`);
+        particle.style.setProperty('--drift-y', `${driftY}px`);
+        particle.style.setProperty('--drift-rot', `${driftRot}deg`);
+        
+        const duration = 5000 + Math.random() * 3000;
+        particle.style.animation = `particleDrift ${duration}ms ease-out forwards`;
+        
+        document.body.appendChild(particle);
+        
+        // Clean up after animation
+        setTimeout(() => {
+          particle.remove();
+        }, duration + 100);
+      };
+
+      // Spawn particles more frequently (every 8-20 seconds)
+      const scheduleParticle = () => {
+        const delay = 8000 + Math.random() * 12000;
+        setTimeout(() => {
+          // Only spawn if page is visible
+          if (!document.hidden) {
+            createParticle();
+          }
+          scheduleParticle();
+        }, delay);
+      };
+
+      // Start after initial page load settles
+      setTimeout(scheduleParticle, 3000);
+    }
+
+    // Register service worker for offline support (only when deployed)
+    if ('serviceWorker' in navigator && location.hostname !== 'www.claudeusercontent.com') {
+      fetch('./sw.js', { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            navigator.serviceWorker.register('./sw.js')
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
     }
   </script>
 </body>
