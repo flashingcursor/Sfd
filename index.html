@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f8f6f1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1c1a17" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Steadfast">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <title>On the Nature of the Work</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,400&family=Cormorant+SC:wght@400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light dark;
+      
+      /* Light mode */
+      --bg-h: 43;
+      --bg-s: 30%;
+      --bg-l: 96%;
+      --bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
+      --text: #1a1a18;
+      --text-muted: #6b6860;
+      --accent: #8b4513;
+      --rule: #d4d0c7;
+      --glow-opacity: 0.35;
+      --glow-color: 255, 252, 245;
+      --texture-opacity: 0.028;
+      --progress-color: rgba(139, 69, 19, 0.15);
+      
+      --glow-x: 50%;
+      --glow-y: 50%;
+      --scroll-progress: 0;
+      --texture-offset-x: 0;
+      --texture-offset-y: 0;
+      --time-warmth: 0;
+      --scroll-velocity: 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-h: 35;
+        --bg-s: 15%;
+        --bg-l: 11%;
+        --bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
+        --text: #e8e4dc;
+        --text-muted: #9a9489;
+        --accent: #c4956a;
+        --rule: #3d3830;
+        --glow-opacity: 0.12;
+        --glow-color: 60, 50, 35;
+        --texture-opacity: 0.04;
+        --progress-color: rgba(196, 149, 106, 0.12);
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      /* Prevent text size adjustment on orientation change */
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    html {
+      font-size: 18px;
+      scroll-behavior: smooth;
+      -webkit-hyphens: auto;
+      hyphens: auto;
+      hyphenate-limit-chars: 6 3 3;
+      hyphenate-limit-lines: 2;
+      hyphenate-limit-last: always;
+    }
+
+    /* Respect user's text size preferences */
+    @supports (font: -apple-system-body) {
+      html {
+        font: -apple-system-body;
+        font-family: 'EB Garamond', Georgia, serif;
+      }
+    }
+
+    body {
+      background-color: hsl(
+        calc(var(--bg-h) - (var(--scroll-progress) * 3) - var(--time-warmth)),
+        var(--bg-s),
+        calc(var(--bg-l) - (var(--scroll-progress) * 1.5%))
+      );
+      color: var(--text);
+      font-family: 'EB Garamond', Georgia, serif;
+      line-height: 1.75;
+      /* Use dvh for proper iOS viewport handling */
+      min-height: 100vh;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: 'kern' 1, 'liga' 1, 'onum' 1, 'pnum' 1;
+      font-variant-ligatures: common-ligatures contextual;
+      font-kerning: normal;
+      transition: background-color 0.5s ease, color 0.3s ease;
+      /* Smooth scrolling with proper iOS momentum */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: hsl(
+          calc(var(--bg-h) - (var(--scroll-progress) * 2) - var(--time-warmth)),
+          var(--bg-s),
+          calc(var(--bg-l) + (var(--scroll-progress) * 1%))
+        );
+      }
+    }
+
+    /* Reading progress - barely visible */
+    .reading-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: transparent;
+      z-index: 1001;
+      pointer-events: none;
+      /* Respect safe areas */
+      top: env(safe-area-inset-top, 0);
+    }
+
+    .reading-progress::after {
+      content: "";
+      display: block;
+      height: 100%;
+      width: calc(var(--scroll-progress) * 100%);
+      background: var(--progress-color);
+      transition: width 0.1s ease-out;
+    }
+
+    /* Soft ambient light */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse 800px 600px at var(--glow-x) var(--glow-y),
+        rgba(var(--glow-color), var(--glow-opacity)) 0%,
+        transparent 70%
+      );
+      z-index: 999;
+      transition: background 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* Paper texture with gyroscope parallax */
+    body::before {
+      content: "";
+      position: fixed;
+      top: calc(var(--texture-offset-y) * -1px);
+      left: calc(var(--texture-offset-x) * -1px);
+      width: calc(100% + 40px);
+      height: calc(100% + 40px);
+      pointer-events: none;
+      /* Texture responds subtly to scroll velocity */
+      opacity: calc(var(--texture-opacity) + (var(--scroll-velocity) * 0.01));
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 512px 512px;
+      z-index: 1000;
+      will-change: top, left, opacity;
+      transition: opacity 0.3s ease;
+    }
+
+    ::selection {
+      background-color: var(--accent);
+      color: var(--bg);
+      text-shadow: none;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 12vh 2rem 16vh;
+      /* Respect safe areas on mobile */
+      padding-left: max(2rem, env(safe-area-inset-left));
+      padding-right: max(2rem, env(safe-area-inset-right));
+      padding-bottom: max(16vh, calc(16vh + env(safe-area-inset-bottom)));
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 1100px) {
+      .container {
+        max-width: 640px;
+        margin-left: calc(50% - 200px);
+      }
+    }
+
+    /* Opening */
+    .opening {
+      margin-bottom: 8rem;
+    }
+
+    .date {
+      font-family: 'Cormorant SC', Georgia, serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      color: var(--text-muted);
+      margin-bottom: 4rem;
+      opacity: 0;
+      animation: fadeIn 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s forwards;
+    }
+
+    .epigraph {
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      border-left: 1px solid var(--rule);
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+      max-width: 480px;
+      hanging-punctuation: first;
+      opacity: 0;
+      animation: fadeIn 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s forwards;
+    }
+
+    .epigraph-attribution {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding-left: 1.5rem;
+      opacity: 0;
+      animation: fadeIn 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.65s forwards;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 5rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+    }
+
+    .section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section-number {
+      font-family: 'Cormorant SC', Georgia, serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    h1 {
+      font-family: 'Cormorant', Georgia, serif;
+      font-size: 2.4rem;
+      font-weight: 400;
+      line-height: 1.18;
+      margin-bottom: 3rem;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+      margin-left: -0.04em;
+    }
+
+    h2 {
+      font-family: 'Cormorant', Georgia, serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.015em;
+    }
+
+    p {
+      margin-bottom: 1.5rem;
+      hanging-punctuation: first last;
+      transition: color 0.3s ease;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    .indent {
+      text-indent: 2rem;
+    }
+
+    /* First paragraph small-caps */
+    .section:first-of-type .thesis:first-of-type::first-line {
+      font-variant-caps: small-caps;
+      letter-spacing: 0.04em;
+      font-size: 1.05em;
+    }
+
+    .thesis {
+      font-size: 1.1rem;
+      line-height: 1.85;
+    }
+
+    /* Numbered points */
+    .points {
+      list-style: none;
+      counter-reset: point;
+    }
+
+    .points li {
+      counter-increment: point;
+      margin-bottom: 1.25rem;
+      padding-left: 2rem;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .points li::before {
+      content: counter(point) ".";
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-feature-settings: 'tnum' 1;
+      transition: color 0.3s ease;
+    }
+
+    /* Horizontal rule */
+    hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, var(--rule) 0%, transparent 100%);
+      margin: 5rem 0;
+      max-width: 120px;
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    hr.visible {
+      transform: scaleX(1);
+    }
+
+    /* Marginalia */
+    .marginalia {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 2rem;
+      line-height: 1.6;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    @media (min-width: 1100px) {
+      .marginalia {
+        position: absolute;
+        right: -220px;
+        width: 180px;
+        margin-top: 0;
+        text-align: left;
+        font-size: 0.78rem;
+        opacity: 0;
+        transform: translateX(10px);
+        transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+      }
+
+      .marginalia::before {
+        content: "";
+        position: absolute;
+        left: -20px;
+        top: 0.5em;
+        width: 12px;
+        height: 1px;
+        background: var(--rule);
+        opacity: 0;
+        transition: opacity 0.4s ease 0.5s;
+      }
+
+      .section.visible .marginalia {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      .section.visible .marginalia::before {
+        opacity: 1;
+      }
+    }
+
+    em {
+      font-style: italic;
+      letter-spacing: 0.01em;
+    }
+
+    /* Links */
+    a {
+      color: var(--text);
+      text-decoration: none;
+      position: relative;
+      background: linear-gradient(to right, var(--accent), var(--accent)) no-repeat;
+      background-size: 0% 1px;
+      background-position: 0 100%;
+      transition: background-size 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      /* Larger touch target on mobile */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: var(--rule);
+      transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    a:hover {
+      background-size: 100% 1px;
+    }
+
+    a:hover::after {
+      opacity: 0;
+    }
+
+    /* Touch-specific active state */
+    @media (hover: none) {
+      a:active {
+        background-size: 100% 1px;
+        opacity: 0.7;
+      }
+      
+      a:active::after {
+        opacity: 0;
+      }
+    }
+
+    a:focus-visible {
+      outline: none;
+      background-size: 100% 1px;
+      box-shadow: 0 0 0 3px var(--bg),
+                  0 0 0 5px var(--accent);
+      border-radius: 2px;
+    }
+
+    /* Footer */
+    .closing {
+      margin-top: 8rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .closing.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .closing-name {
+      font-family: 'Cormorant SC', Georgia, serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .email {
+      font-family: 'Cormorant', Georgia, serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .email a {
+      /* Generous touch target */
+      display: inline-block;
+      padding: 0.5em 0;
+      margin: -0.5em 0;
+    }
+
+    .email a::after {
+      display: none;
+    }
+
+    .email a {
+      background: none;
+      border-bottom: 1px solid var(--rule);
+      transition: border-color 0.4s ease, color 0.4s ease;
+    }
+
+    .email a:hover,
+    .email a:active {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      html {
+        font-size: 16px;
+      }
+
+      .container {
+        padding: 8vh 1.5rem 12vh;
+        padding-left: max(1.5rem, env(safe-area-inset-left));
+        padding-right: max(1.5rem, env(safe-area-inset-right));
+        padding-bottom: max(12vh, calc(12vh + env(safe-area-inset-bottom)));
+      }
+
+      h1 {
+        font-size: 1.85rem;
+      }
+
+      .opening {
+        margin-bottom: 5rem;
+      }
+
+      .section {
+        margin-bottom: 4rem;
+      }
+
+      /* Slightly larger line height for mobile readability */
+      p, li {
+        line-height: 1.8;
+      }
+    }
+
+    /* Landscape mobile - tighter spacing */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .container {
+        padding-top: 6vh;
+        padding-bottom: 8vh;
+      }
+
+      .opening {
+        margin-bottom: 4rem;
+      }
+
+      .section {
+        margin-bottom: 3rem;
+      }
+
+      hr {
+        margin: 3rem 0;
+      }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      
+      .section, .closing, hr, .marginalia {
+        opacity: 1;
+        transform: none;
+      }
+
+      hr {
+        transform: scaleX(1);
+      }
+
+      .reading-progress::after {
+        transition: none;
+      }
+    }
+
+    /* Print */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 11pt;
+        line-height: 1.5;
+      }
+
+      body::before,
+      body::after,
+      .reading-progress {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+
+      .section, .marginalia {
+        opacity: 1 !important;
+        transform: none !important;
+        position: static !important;
+      }
+
+      .marginalia {
+        width: auto !important;
+        font-size: 9pt;
+        border-left: 2px solid #ccc;
+        padding-left: 1em;
+        margin-top: 1em;
+        margin-left: 2em;
+        right: auto !important;
+      }
+
+      .marginalia::before {
+        display: none !important;
+      }
+
+      hr {
+        transform: scaleX(1) !important;
+        background: #ccc !important;
+      }
+
+      a {
+        color: black !important;
+        text-decoration: underline;
+      }
+
+      a[href^="mailto"]::after {
+        content: none;
+      }
+
+      a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+        color: #666;
+      }
+
+      .opening {
+        margin-bottom: 3rem;
+      }
+
+      h1 {
+        font-size: 18pt;
+      }
+
+      h2 {
+        font-size: 13pt;
+      }
+
+      .closing {
+        margin-top: 3rem;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+  
+  <main class="container">
+    
+    <header class="opening">
+      <p class="date">Notes — Winter 2024</p>
+      <blockquote class="epigraph">
+        "The future is already here—it's just not evenly distributed."
+      </blockquote>
+      <p class="epigraph-attribution">— Gibson, overquoted but still true</p>
+    </header>
+
+    <section class="section" data-section="1">
+      <span class="section-number">I</span>
+      <h1>The world is moving faster than most people's ability to think about it.</h1>
+      <p class="thesis">
+        What was fiction five years ago is infrastructure now. What was 
+        impossible last year is Tuesday. The gap between what's real and 
+        what feels real is widening—and somewhere in that gap, things are 
+        being built without enough people asking whether they should be.
+      </p>
+      <p class="thesis indent">
+        We're not here to slow anything down. We're here to make sure 
+        the right questions get asked while there's still time to ask them.
+      </p>
+    </section>
+
+    <hr data-threshold="1">
+
+    <section class="section" data-section="2">
+      <span class="section-number">II</span>
+      <h2>On care</h2>
+      <p>
+        There's a phrase people use—"perfection is the enemy of good enough"—and 
+        it's been repeated so often that both words have gone hollow. Perfection 
+        now means obsession. Good enough now means shipping your debt to the 
+        next person. Neither meaning is the original one.
+      </p>
+      <p class="indent">
+        We believe in the old meanings. Perfection as completion—the point 
+        where nothing can be added or removed. Good enough as sufficiency—the 
+        point where something actually serves its purpose, not just the deadline.
+      </p>
+      <p class="marginalia" data-anchor="previous">
+        The people who say "good enough" most often are usually the ones 
+        who won't have to live with the consequences.
+      </p>
+    </section>
+
+    <section class="section" data-section="3">
+      <span class="section-number">III</span>
+      <h2>What we are not</h2>
+      <ol class="points">
+        <li>We are not a consultancy. We don't improve your existing assumptions—we question whether they're the right ones.</li>
+        <li>We are not an agency. We don't wait for briefs. We're already thinking about the problem.</li>
+        <li>We are not neutral. When the ground is shifting, neutrality is just a slow way of falling.</li>
+        <li>We are not in a hurry. But we're not asleep either. There's a difference between moving fast and thinking clearly.</li>
+      </ol>
+    </section>
+
+    <section class="section" data-section="4">
+      <span class="section-number">IV</span>
+      <h2>What we might be</h2>
+      <p>
+        A small group—futurists, developers, tinkerers, solvers—who take the 
+        present seriously enough to be unsettled by it. Less a firm than a 
+        thinktank. Less focused on technology than on what technology is 
+        doing to everything else.
+      </p>
+      <p class="indent">
+        The world and its machines are no longer separate things. Someone 
+        needs to keep watch at the seam. Not to stop the change, but to 
+        make sure the change is worth what it costs.
+      </p>
+    </section>
+
+    <hr data-threshold="2">
+
+    <section class="section" data-section="5">
+      <span class="section-number">V</span>
+      <h2>A note on timing</h2>
+      <p>
+        You're reading this before it's finished—but then again, nothing 
+        is finished right now. We published it because the alternative was 
+        waiting for a stable moment that isn't coming. The people who need 
+        to find this will find it.
+      </p>
+      <p class="marginalia" data-anchor="previous">
+        When there's more to say, we'll say it here.
+      </p>
+    </section>
+
+    <footer class="closing">
+      <p class="closing-name">Steadfast Digital</p>
+      <p class="email"><a href="mailto:hello@steadfastdigital.io">hello@steadfastdigital.io</a></p>
+    </footer>
+
+  </main>
+
+  <script>
+    // Feature detection
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const hasGyroscope = 'DeviceOrientationEvent' in window;
+    const hasHaptics = 'vibrate' in navigator;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Position marginalia
+    function positionMarginalia() {
+      if (window.innerWidth < 1100) return;
+      
+      document.querySelectorAll('.marginalia[data-anchor="previous"]').forEach(note => {
+        const anchor = note.previousElementSibling;
+        if (!anchor) return;
+        
+        const section = note.closest('.section');
+        const sectionRect = section.getBoundingClientRect();
+        const anchorRect = anchor.getBoundingClientRect();
+        
+        const topOffset = anchorRect.top - sectionRect.top;
+        note.style.top = `${topOffset}px`;
+      });
+    }
+
+    positionMarginalia();
+    
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (window.innerWidth < 1100) {
+          document.querySelectorAll('.marginalia').forEach(note => {
+            note.style.top = '';
+          });
+        } else {
+          positionMarginalia();
+        }
+      }, 100);
+    });
+
+    document.fonts.ready.then(positionMarginalia);
+
+    // Time-aware warmth
+    function calculateTimeWarmth() {
+      const hour = new Date().getHours();
+      const peak = 20;
+      const diff = Math.abs(hour - peak);
+      const warmth = Math.max(0, 5 - (diff * 0.5));
+      document.documentElement.style.setProperty('--time-warmth', warmth);
+    }
+    calculateTimeWarmth();
+    setInterval(calculateTimeWarmth, 60000);
+
+    // Gyroscope-based texture parallax (mobile only)
+    if (isTouch && hasGyroscope && !prefersReducedMotion) {
+      let gyroPermissionGranted = false;
+      
+      // iOS 13+ requires permission
+      const requestGyroPermission = async () => {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          try {
+            const permission = await DeviceOrientationEvent.requestPermission();
+            gyroPermissionGranted = permission === 'granted';
+          } catch (e) {
+            gyroPermissionGranted = false;
+          }
+        } else {
+          gyroPermissionGranted = true;
+        }
+        
+        if (gyroPermissionGranted) {
+          initGyroscope();
+        }
+      };
+
+      const initGyroscope = () => {
+        let lastGamma = 0;
+        let lastBeta = 0;
+        
+        window.addEventListener('deviceorientation', (e) => {
+          if (e.gamma === null || e.beta === null) return;
+          
+          // Smooth the values
+          const gamma = lastGamma + (e.gamma - lastGamma) * 0.1;
+          const beta = lastBeta + (e.beta - lastBeta) * 0.1;
+          lastGamma = gamma;
+          lastBeta = beta;
+          
+          // Subtle movement - max 20px
+          const x = Math.max(-20, Math.min(20, gamma * 0.5));
+          const y = Math.max(-20, Math.min(20, (beta - 45) * 0.3));
+          
+          document.documentElement.style.setProperty('--texture-offset-x', x);
+          document.documentElement.style.setProperty('--texture-offset-y', y);
+        }, { passive: true });
+      };
+
+      // Request permission on first touch
+      document.addEventListener('touchstart', () => {
+        if (!gyroPermissionGranted) {
+          requestGyroPermission();
+        }
+      }, { once: true });
+    }
+
+    // Cursor-following ambient light (desktop only)
+    if (!isTouch) {
+      let lastMouseMove = 0;
+      document.addEventListener('mousemove', (e) => {
+        const now = Date.now();
+        if (now - lastMouseMove < 16) return;
+        lastMouseMove = now;
+        
+        requestAnimationFrame(() => {
+          const x = (e.clientX / window.innerWidth) * 100;
+          const y = (e.clientY / window.innerHeight) * 100;
+          document.body.style.setProperty('--glow-x', `${x}%`);
+          document.body.style.setProperty('--glow-y', `${y}%`);
+        });
+      });
+    }
+
+    // Scroll-linked effects with velocity tracking
+    let ticking = false;
+    let lastScrollTop = 0;
+    let lastScrollTime = Date.now();
+    let scrollVelocity = 0;
+
+    function updateScrollEffects() {
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+      
+      // Calculate velocity
+      const now = Date.now();
+      const timeDelta = now - lastScrollTime;
+      if (timeDelta > 0) {
+        const scrollDelta = Math.abs(scrollTop - lastScrollTop);
+        scrollVelocity = Math.min(scrollDelta / timeDelta * 10, 1);
+      }
+      lastScrollTop = scrollTop;
+      lastScrollTime = now;
+      
+      document.documentElement.style.setProperty('--scroll-progress', progress);
+      document.documentElement.style.setProperty('--scroll-velocity', scrollVelocity);
+      
+      // Decay velocity
+      scrollVelocity *= 0.95;
+      
+      // Texture parallax on scroll (when no gyroscope)
+      if (!hasGyroscope || !isTouch) {
+        document.documentElement.style.setProperty('--texture-offset-y', scrollTop * 0.08);
+      }
+      
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateScrollEffects);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // Subtle haptic feedback
+    const triggerHaptic = (style = 'light') => {
+      if (!hasHaptics || prefersReducedMotion) return;
+      
+      const patterns = {
+        light: [8],
+        medium: [12],
+        threshold: [5, 30, 5]
+      };
+      
+      navigator.vibrate(patterns[style] || patterns.light);
+    };
+
+    // Intersection Observer with haptic feedback
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px 0px -80px 0px',
+      threshold: 0.15
+    };
+
+    const revealedSections = new Set();
+    const crossedThresholds = new Set();
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const delay = el.tagName === 'HR' ? 0 : 100;
+          
+          setTimeout(() => {
+            el.classList.add('visible');
+            
+            // Haptic on section reveal
+            if (el.classList.contains('section')) {
+              const sectionNum = el.dataset.section;
+              if (sectionNum && !revealedSections.has(sectionNum)) {
+                revealedSections.add(sectionNum);
+                triggerHaptic('light');
+              }
+              setTimeout(positionMarginalia, 50);
+            }
+            
+            // Haptic on HR crossing
+            if (el.tagName === 'HR') {
+              const threshold = el.dataset.threshold;
+              if (threshold && !crossedThresholds.has(threshold)) {
+                crossedThresholds.add(threshold);
+                triggerHaptic('threshold');
+              }
+            }
+          }, delay);
+          
+          observer.unobserve(el);
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.section, hr, .closing').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Paragraph proximity effect (desktop only)
+    if (!isTouch && !prefersReducedMotion) {
+      let proximityFrame = null;
+      
+      const getBaseTextColor = () => {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return isDark ? { h: 35, s: 12, l: 88 } : { h: 25, s: 8, l: 12 };
+      };
+      
+      document.addEventListener('mousemove', (e) => {
+        if (proximityFrame) return;
+        
+        proximityFrame = requestAnimationFrame(() => {
+          const baseColor = getBaseTextColor();
+          const paragraphs = document.querySelectorAll('p:not(.marginalia), li');
+          
+          paragraphs.forEach(p => {
+            const rect = p.getBoundingClientRect();
+            const centerY = rect.top + rect.height / 2;
+            const distance = Math.abs(e.clientY - centerY);
+            const maxDistance = 150;
+            const proximity = Math.max(0, 1 - (distance / maxDistance));
+            
+            if (proximity > 0.3) {
+              const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+              const lightness = isDark 
+                ? baseColor.l + (1 - proximity) * 6
+                : baseColor.l + (1 - proximity) * 8;
+              p.style.color = `hsl(${baseColor.h}, ${baseColor.s}%, ${lightness}%)`;
+            } else {
+              p.style.color = '';
+            }
+          });
+          proximityFrame = null;
+        });
+      });
+    }
+
+    updateScrollEffects();
+
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('SW registered'))
+        .catch((err) => console.log('SW registration failed:', err));
+    }
+  </script>
+</body>
+</html>
